@@ -1,0 +1,145 @@
+# Quote Cards Service
+
+Bun-powered service that ingests typed content (starting with quotes), stores it in SQLite, renders OG assets, and serves embeds, Markdown, and RSS feeds from a single VPS-friendly deployment.
+
+## Requirements
+
+- [Bun](https://bun.sh/) 1.3+
+
+## Setup
+
+```bash
+bun install
+bun run migrate             # creates SQLite schema under ./data
+bun run key:create my-key   # prints a new API token (store it somewhere safe)
+```
+
+The service stores data under `./data` by default (configurable via `DATA_ROOT`). Generated assets land in:
+
+- `data/og/<type>/<id>.jpg`
+- `data/embed/<type>/<id>.html`
+- `data/markdown/<type>/<id>.md`
+- `data/rss/<type>.xml`
+
+## Running locally
+
+Start the HTTP API and render worker in separate terminals:
+
+```bash
+bun run start:api
+bun run start:worker
+```
+
+Environment variables:
+
+- `PORT` – API port (default `3000`).
+- `DATA_ROOT` – absolute/relative path for asset output (`./data` default).
+- `DATABASE_PATH` – custom SQLite file path.
+- `SITE_ORIGIN` – public hostname (used when generating absolute asset URLs/RSS links).
+- `BASE_PATH` – optional prefix like `/quotes` when hosting behind a subdirectory.
+- `CARD_VERSION` – cache-busting query appended to OG JPEG URLs.
+
+## Submitting a quote
+
+```bash
+curl -X POST http://localhost:3000/items \
+  -H "Authorization: Bearer 2a60112a241a057e4050fe010b6072fbbf61f98987b4fd9b" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "quote",
+    "attributes": {
+      "quote_text": "What is an API.",
+      "author": "Anot Person",
+      "url": "https://example.com/static-first-two"
+    },
+    "tags": ["static", "inspiration"]
+  }'
+```
+
+The API enqueues the new item (`render_status="queued"`). The worker renders outputs, regenerates the quote RSS feed, and updates the database to `render_status="rendered"` once complete.
+
+Prefer a browser? When the API is running locally, visit `http://localhost:3000/` (or the host/IP where it’s exposed) to use the built-in form. Enter your token once; the page stores it in local storage so you can submit quotes quickly from any device on your network.
+
+## Fetching content
+
+- `GET /items?type=quote` – list items (supports `limit`, `cursor`, `tag`).
+- `GET /items/<id>` – retrieve metadata and asset URLs.
+- `GET /items/<id>/markdown` – download canonical Markdown for CLI/editor workflows.
+
+Public assets resolve relative to `/og/`, `/embed/`, `/markdown/`, and `/rss/`. Set `SITE_ORIGIN`/`BASE_PATH` so RSS links and returned URLs match your deployment.
+
+## API tokens
+
+Tokens are pre-generated secrets hashed in the database. Use `bun run key:create <name>` to mint a new one. The script prints the plaintext token once—store it securely. To rotate keys, delete the row from `api_keys` (via SQLite shell) and re-run the script.
+
+## Deployment
+
+### Quick VPS setup
+
+1. Provision a small Linux VPS (e.g., Ubuntu 22.04, 1 vCPU/1 GB RAM). Allow inbound 80/443 (and 22 for SSH).  
+2. Install prerequisites and Bun:
+   ```bash
+   sudo apt update
+   sudo apt install -y git curl sqlite3 libfontconfig1 nginx
+   curl -fsSL https://bun.sh/install | bash
+   echo 'export PATH="$HOME/.bun/bin:$PATH"' >> ~/.profile
+   ```
+3. Create a dedicated user and directories for the app and data:
+   ```bash
+   sudo useradd --system --home /srv/quote-cards --shell /usr/sbin/nologin quote-cards
+   sudo mkdir -p /srv/quote-cards/{app,data,logs}
+   sudo chown -R quote-cards:quote-cards /srv/quote-cards
+   ```
+4. Deploy the code and install dependencies:
+   ```bash
+   sudo -u quote-cards -H bash -c 'cd /srv/quote-cards && git clone <repo-url> app'
+   sudo -u quote-cards -H bash -c 'cd /srv/quote-cards/app && bun install'
+   ```
+5. Run migrations and mint an API token (store the plaintext token securely):
+   ```bash
+   sudo -u quote-cards -H bash -c 'cd /srv/quote-cards/app && bun run migrate'
+   sudo -u quote-cards -H bash -c 'cd /srv/quote-cards/app && bun run key:create admin'
+   ```
+6. Create `/etc/quote-cards.env` (permission `600`) with production env vars:
+   ```
+   PORT=3000
+   DATA_ROOT=/srv/quote-cards/data
+   DATABASE_PATH=/srv/quote-cards/data/db.sqlite
+   SITE_ORIGIN=https://quotes.example.com
+   BASE_PATH=
+   CARD_VERSION=1
+   LOG_LEVEL=info
+   ```
+7. Install the provided systemd units and start the services:
+   ```bash
+   sudo cp deploy/systemd/quote-cards-*.service /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now quote-cards-worker.service quote-cards-api.service
+   ```
+8. Configure a reverse proxy (Caddy/Nginx) to terminate TLS and forward to `localhost:3000`. The sample Nginx file under `deploy/nginx/` is a good starting point.
+9. Verify the setup by browsing to your domain, saving the generated API token in the form, and submitting a test quote. Assets should appear under `/srv/quote-cards/data`.
+
+For a more detailed walkthrough (including smoke tests, backups, and TLS tips) see `deploy/README.md`.
+
+## Project structure
+
+```
+.
+├─ src/
+│  ├─ api.ts            # Bun HTTP server
+│  ├─ worker.ts         # render queue processor
+│  ├─ lib/              # config, db, auth, RSS, filesystem helpers
+│  ├─ types/            # item type registry + quote schema/normalizers
+│  └─ render/           # renderer registry + Satori/Resvg quote renderer
+├─ migrations/          # SQLite migration files
+├─ data/                # generated assets + SQLite (gitignored)
+└─ bunfig.toml / tsconfig.json
+```
+
+The quote renderer uses Satori to build SVGs, Resvg to rasterize, and jpeg-js to encode OG cards. Templates live in `src/render`.
+
+## Next steps
+
+- Flesh out the quote renderer with Satori + Resvg + jpeg-js outputs.
+- Add product/item renderers via the type registry.
+- Layer richer auth (per-user keys, workspaces) on top of the existing API key table.

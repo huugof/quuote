@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Quote Cards</title>
+        <style>
+            :root {
+                color-scheme: dark light;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                font-family:
+                    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
+                    monospace;
+                background: #111;
+                color: #f4f4f5;
+                display: flex;
+                justify-content: center;
+                padding: 3rem 1.5rem;
+            }
+            main {
+                width: min(620px, 100%);
+                display: grid;
+                gap: 1.25rem;
+            }
+            h1 {
+                margin: 0;
+                font-size: 1.4rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #fafafa;
+            }
+            form {
+                display: grid;
+                gap: 0.85rem;
+            }
+            .actions {
+                display: grid;
+                grid-template-columns: 150px minmax(0, 1fr);
+                align-items: center;
+                gap: 0.85rem;
+            }
+            .actions button {
+                justify-self: start;
+                width: 100%;
+                font-size: 0.85rem;
+                padding: 0.3rem 0.75rem;
+            }
+            .field {
+                position: relative;
+            }
+            .field input,
+            .field textarea {
+                width: 100%;
+                border: 1px solid #3f3f46;
+                background: #0c0c0c;
+                color: inherit;
+                padding: 0.3rem 0.45rem;
+                font-size: 0.85rem;
+                border-radius: 4px;
+                transition:
+                    border-color 0.15s ease,
+                    box-shadow 0.15s ease;
+            }
+            .field textarea {
+                min-height: 130px;
+                resize: vertical;
+            }
+            .field input:focus,
+            .field textarea:focus {
+                outline: none;
+                border-color: #fafafa;
+                box-shadow: 0 0 0 3px rgba(250, 250, 250, 0.12);
+            }
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+            button {
+                border: 1px solid #3f3f46;
+                background: transparent;
+                color: inherit;
+                padding: 0.3rem 0.45rem;
+                font-size: 0.9rem;
+                border-radius: 4px;
+                transition:
+                    border-color 0.15s ease,
+                    color 0.15s ease;
+                cursor: pointer;
+            }
+            button:hover {
+                border-color: #fafafa;
+                color: #fafafa;
+            }
+            button:disabled {
+                opacity: 0.4;
+                cursor: wait;
+            }
+            .status {
+                border: 1px solid #3f3f46;
+                padding: 0.35rem 0.45rem;
+                border-radius: 4px;
+                display: none;
+                background: #0c0c0c;
+                font-size: 0.8rem;
+            }
+            .status.success {
+                display: block;
+                border-color: #34d399;
+                color: #34d399;
+            }
+            .status.error {
+                display: block;
+                border-color: #f87171;
+                color: #f87171;
+            }
+            .token-section {
+                display: none;
+                grid-column: 2;
+            }
+            .token-section.active {
+                display: block;
+            }
+            .token-section input {
+                border-color: #ef4444;
+                color: #ef4444;
+            }
+            .token-section input:focus {
+                border-color: #ef4444;
+                box-shadow: none;
+            }
+            .token-section input::placeholder {
+                color: #ef4444;
+            }
+            .saved-note {
+                display: none;
+                grid-column: 2;
+                justify-self: end;
+                font-size: 0.75rem;
+            }
+            .saved-note.visible {
+                display: block;
+            }
+            .saved-note.success {
+                color: #34d399;
+            }
+            .saved-note.error {
+                color: #ef4444;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Quote Cards</h1>
+            <form id="quote-form">
+                <div class="field" style="max-width: 60%">
+                    <label class="sr-only" for="article_title"
+                        >Article Title</label
+                    >
+                    <input
+                        id="article_title"
+                        type="text"
+                        placeholder="article title"
+                    />
+                </div>
+                <div class="field" style="max-width: 60%">
+                    <label class="sr-only" for="site">Site</label>
+                    <input id="site" type="text" placeholder="blog / author" />
+                </div>
+                <div class="field">
+                    <label class="sr-only" for="url">URL</label>
+                    <input
+                        id="url"
+                        type="url"
+                        placeholder="https://www.example.com/"
+                        required
+                    />
+                </div>
+                <div class="field">
+                    <label class="sr-only" for="quote_text">Quote</label>
+                    <textarea
+                        id="quote_text"
+                        placeholder="paste the quote here…"
+                        required
+                    ></textarea>
+                </div>
+                <div class="field actions">
+                    <button type="submit" id="submit-button">save quote</button>
+                    <div class="token-section field" id="token-section">
+                        <label class="sr-only" for="token">Token</label>
+                        <input
+                            id="token"
+                            type="password"
+                            autocomplete="off"
+                            placeholder="enter your api token, it's stored locally in your browser"
+                        />
+                    </div>
+                    <span
+                        class="saved-note"
+                        id="quote-saved-note"
+                        aria-live="polite"
+                    ></span>
+                </div>
+                <div class="status" id="status"></div>
+            </form>
+        </main>
+
+        <script>
+            const form = document.getElementById("quote-form");
+            const statusEl = document.getElementById("status");
+            const tokenSection = document.getElementById("token-section");
+            const tokenInput = document.getElementById("token");
+            const submitButton = document.getElementById("submit-button");
+            const quoteSavedNote = document.getElementById("quote-saved-note");
+
+            const TOKEN_KEY = "quoteCardsToken";
+            let savedNoteTimer = null;
+
+            function getToken() {
+                return localStorage.getItem(TOKEN_KEY) ?? "";
+            }
+
+            function setStatus(message, type) {
+                statusEl.textContent = message;
+                statusEl.className = type ? `status ${type}` : "status";
+                statusEl.style.display = message ? "block" : "none";
+            }
+
+            function clearStatus() {
+                setStatus("", "");
+            }
+
+            function revealTokenSection() {
+                hideSavedNote();
+                tokenSection.classList.add("active");
+                tokenInput.focus();
+                submitButton.textContent = "save token";
+                submitButton.dataset.mode = "token";
+            }
+
+            function hideTokenSection() {
+                tokenSection.classList.remove("active");
+                tokenInput.value = "";
+                submitButton.textContent = "save quote";
+                delete submitButton.dataset.mode;
+            }
+
+            async function verifyToken(token) {
+                const response = await fetch("/items", {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: "{}",
+                });
+                if (response.status === 401) {
+                    return false;
+                }
+                return true;
+            }
+
+            function hideSavedNote() {
+                if (savedNoteTimer) {
+                    clearTimeout(savedNoteTimer);
+                    savedNoteTimer = null;
+                }
+                quoteSavedNote.classList.remove("visible", "success", "error");
+                quoteSavedNote.textContent = "";
+            }
+
+            function showSavedNote(message, type = "success") {
+                hideSavedNote();
+                quoteSavedNote.textContent = message;
+                quoteSavedNote.classList.add("visible", type);
+                savedNoteTimer = setTimeout(() => {
+                    quoteSavedNote.classList.remove("visible", type);
+                    quoteSavedNote.textContent = "";
+                    savedNoteTimer = null;
+                }, 10000);
+            }
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                clearStatus();
+                hideSavedNote();
+
+                if (submitButton.dataset.mode === "token") {
+                    const newToken = tokenInput.value.trim();
+                    if (!newToken) {
+                        setStatus("Token is required.", "error");
+                        tokenInput.focus();
+                        return;
+                    }
+
+                    submitButton.disabled = true;
+
+                    try {
+                        const isValid = await verifyToken(newToken);
+                        clearStatus();
+
+                        if (!isValid) {
+                            localStorage.removeItem(TOKEN_KEY);
+                            showSavedNote("authorization failed", "error");
+                            tokenInput.focus();
+                            return;
+                        }
+
+                        localStorage.setItem(TOKEN_KEY, newToken);
+                        hideTokenSection();
+                        showSavedNote("token saved", "success");
+                        return;
+                    } catch (error) {
+                        setStatus(
+                            "Unable to verify token. Please try again.",
+                            "error",
+                        );
+                        tokenInput.focus();
+                        return;
+                    } finally {
+                        submitButton.disabled = false;
+                    }
+                }
+
+                const token = getToken();
+                if (!token) {
+                    revealTokenSection();
+                    return;
+                }
+
+                const articleTitle = document
+                    .getElementById("article_title")
+                    .value.trim();
+                const site = document.getElementById("site").value.trim();
+                const url = document.getElementById("url").value.trim();
+                const quoteText = document
+                    .getElementById("quote_text")
+                    .value.trim();
+
+                if (!quoteText || !url) {
+                    setStatus("Quote and site are required.", "error");
+                    return;
+                }
+
+                const payload = {
+                    type: "quote",
+                    attributes: {
+                        quote_text: quoteText,
+                        url,
+                    },
+                };
+
+                if (articleTitle)
+                    payload.attributes.article_title = articleTitle;
+                if (site) payload.attributes.author = site;
+
+                submitButton.disabled = true;
+
+                try {
+                    const response = await fetch("/items", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(payload),
+                    });
+
+                    const result = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            localStorage.removeItem(TOKEN_KEY);
+                            revealTokenSection();
+                        } else {
+                            const message =
+                                result.error ||
+                                `Request failed (${response.status})`;
+                            setStatus(message, "error");
+                        }
+                        return;
+                    }
+
+                    form.reset();
+                    showSavedNote("quote saved", "success");
+                } catch (error) {
+                    setStatus("Network error: " + error.message, "error");
+                } finally {
+                    submitButton.disabled = false;
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,18 @@
+[Unit]
+Description=Quote Cards API
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/quote-cards.env
+User=quote-cards
+Group=quote-cards
+WorkingDirectory=/srv/quote-cards/app
+ExecStart=/usr/bin/env bun run src/api.ts
+Restart=on-failure
+RestartSec=2s
+StandardOutput=append:/srv/quote-cards/logs/api.log
+StandardError=append:/srv/quote-cards/logs/api.log
+
+[Install]
+WantedBy=multi-user.target

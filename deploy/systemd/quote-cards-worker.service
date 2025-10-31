@@ -1,0 +1,18 @@
+[Unit]
+Description=Quote Cards Render Worker
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/quote-cards.env
+User=quote-cards
+Group=quote-cards
+WorkingDirectory=/srv/quote-cards/app
+ExecStart=/usr/bin/env bun run src/worker.ts
+Restart=on-failure
+RestartSec=2s
+StandardOutput=append:/srv/quote-cards/logs/worker.log
+StandardError=append:/srv/quote-cards/logs/worker.log
+
+[Install]
+WantedBy=multi-user.target

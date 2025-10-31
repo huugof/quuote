@@ -1,0 +1,28 @@
+{
+  "name": "quote-cards",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Bun-powered service that ingests structured items, renders OG assets, and serves feeds.",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "scripts": {
+    "dev:api": "bun run --watch src/api.ts",
+    "dev:worker": "bun run --watch src/worker.ts",
+    "start:api": "bun run src/api.ts",
+    "start:worker": "bun run src/worker.ts",
+    "migrate": "bun run src/scripts/migrate.ts",
+    "key:create": "bun run src/scripts/create-api-key.ts"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.4.1",
+    "jpeg-js": "^0.4.4",
+    "satori": "^0.10.11",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "packageManager": "bun@1.3.1"
+}

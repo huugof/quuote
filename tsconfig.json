@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "satori",
+    "types": ["bun-types"],
+    "baseUrl": "./",
+    "paths": {
+      "@app/lib/*": ["src/lib/*"],
+      "@app/types/*": ["src/types/*"],
+      "@app/render/*": ["src/render/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

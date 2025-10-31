@@ -1,0 +1,6 @@
+[default]
+jsx = "automatic"
+jsxImportSource = "satori"
+
+[test]
+preload = ["./src/setup-test.ts"]
