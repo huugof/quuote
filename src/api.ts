@@ -162,15 +162,29 @@ serve({
     }
 
     if (url.pathname === "/health") {
+      if (request.method === "HEAD") {
+        return new Response(null, {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
       return jsonResponse({ status: "ok" });
     }
 
     if (
-      request.method === "GET" &&
+      (request.method === "GET" || request.method === "HEAD") &&
       (url.pathname === "/" || url.pathname === "/index.html")
     ) {
       const page = serveStaticHome();
-      if (page) return page;
+      if (page) {
+        if (request.method === "HEAD") {
+          return new Response(null, {
+            status: 200,
+            headers: page.headers,
+          });
+        }
+        return page;
+      }
     }
 
     if (url.pathname === "/items" && request.method === "POST") {
