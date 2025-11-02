@@ -116,7 +116,12 @@ async function serveDataAsset(url: URL): Promise<Response | null> {
   const allowed = new Set(["embed", "markdown", "og", "rss"]);
   if (!allowed.has(root)) return null;
 
-  if (rest.some((segment) => segment === ".." || segment === "." || segment.includes(".."))) {
+  if (
+    rest.some(
+      (segment) =>
+        segment === ".." || segment === "." || segment.includes(".."),
+    )
+  ) {
     return null;
   }
 
@@ -135,7 +140,8 @@ async function serveDataAsset(url: URL): Promise<Response | null> {
   return new Response(file, {
     headers: {
       "Content-Type": contentType,
-      "Cache-Control": root === "og" ? "public, max-age=31536000, immutable" : "no-store",
+      "Cache-Control":
+        root === "og" ? "public, max-age=31536000, immutable" : "no-store",
     },
   });
 }
@@ -143,7 +149,17 @@ async function serveDataAsset(url: URL): Promise<Response | null> {
 serve({
   port: config.port,
   async fetch(request) {
-    const url = new URL(request.url);
+    const forwardedProto = request.headers.get("x-forwarded-proto") ?? "http";
+    const hostHeader =
+      request.headers.get("host") ?? `127.0.0.1:${config.port}`;
+
+    let url: URL;
+    try {
+      url = new URL(request.url, `${forwardedProto}://${hostHeader}`);
+    } catch {
+      logger.warn("invalid_request_url", { value: request.url });
+      return errorResponse("Invalid request URL", 400);
+    }
 
     if (url.pathname === "/health") {
       return jsonResponse({ status: "ok" });
