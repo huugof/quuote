@@ -179,30 +179,15 @@
         <main>
             <h1>QUOOTE</h1>
             <nav class="site-links">
-                <a
-                    href="https://quoote.wtf/feed"
-                    target="_blank"
-                    rel="noreferrer"
-                    >Feed</a
-                >
+                <a href="/feed">Feed</a>
                 <a
                     href="https://github.com/huugof/quuote"
                     target="_blank"
                     rel="noreferrer"
                     >GitHub</a
                 >
-                <a
-                    href="https://quoote.wtf/about"
-                    target="_blank"
-                    rel="noreferrer"
-                    >About</a
-                >
-                <a
-                    href="https://quoote.wtf/rss/quote.xml"
-                    target="_blank"
-                    rel="noreferrer"
-                    >RSS</a
-                >
+                <a href="/about">About</a>
+                <a href="/rss/quote.xml">RSS</a>
             </nav>
             <form id="quote-form">
                 <div class="field" style="max-width: 60%">
@@ -399,7 +384,8 @@
                     },
                 };
 
-                if (articleTitle) payload.attributes.article_title = articleTitle;
+                if (articleTitle)
+                    payload.attributes.article_title = articleTitle;
                 if (site) payload.attributes.author = site;
 
                 submitButton.disabled = true;

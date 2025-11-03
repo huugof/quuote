@@ -108,6 +108,139 @@ function serveStaticHome(): Response | null {
   }
 }
 
+function buildFeedPage(items: ItemRow<any>[]): string {
+  const listItemsHtml = items
+    .map((item) => {
+      const attributes: any = item.attributes ?? {};
+      const quoteText = typeof attributes.quote_text === "string" ? attributes.quote_text : "";
+      const author = typeof attributes.author === "string" ? attributes.author : "";
+      const sourceUrl = item.sourceUrl ?? attributes.url ?? "";
+      const assets = buildAssetUrls(item.type, item.id);
+      const escapedQuote = escapeHtml(quoteText);
+      const escapedAuthor = escapeHtml(author);
+      const escapedId = escapeHtml(item.id);
+      const escapedSource = sourceUrl ? escapeHtml(sourceUrl) : "";
+      const embedLink = escapeHtml(assets.embed);
+      const ogLink = escapeHtml(assets.og);
+      const markdownLink = escapeHtml(assets.markdown);
+
+      return `        <li class="quote-item">
+          <blockquote>“${escapedQuote}”</blockquote>
+          ${escapedAuthor ? `<cite>${escapedAuthor}</cite>` : ""}
+          <div class="meta">
+            <span>ID: ${escapedId}</span>
+            ${escapedSource ? `<a href="${escapedSource}" target="_blank" rel="noreferrer">source</a>` : ""}
+            <a href="${embedLink}" target="_blank" rel="noreferrer">embed</a>
+            <a href="${ogLink}" target="_blank" rel="noreferrer">og</a>
+            <a href="${markdownLink}" target="_blank" rel="noreferrer">markdown</a>
+          </div>
+        </li>`;
+    })
+    .join("\n");
+
+  const listSection = items.length
+    ? `<ul class="quote-list">\n${listItemsHtml}\n      </ul>`
+    : `<p class="empty">No quotes yet. Add one from the home page.</p>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QUOOTE · Feed</title>
+    <style>
+      :root { color-scheme: dark light; }
+      body {
+        margin: 0;
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: #111;
+        color: #f4f4f5;
+        display: flex;
+        justify-content: center;
+        padding: 3rem 1.5rem;
+      }
+      main {
+        width: min(720px, 100%);
+        display: grid;
+        gap: 1.5rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      nav {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      nav a {
+        color: inherit;
+        text-decoration: none;
+        opacity: 0.75;
+      }
+      nav a:hover { opacity: 1; }
+      .quote-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 1.5rem;
+      }
+      .quote-item {
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
+        padding: 1rem 1.1rem;
+        background: #0c0c0c;
+        display: grid;
+        gap: 0.6rem;
+      }
+      blockquote {
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+      cite {
+        font-style: normal;
+        color: #a1a1aa;
+        font-size: 0.85rem;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-size: 0.75rem;
+        color: #d4d4d8;
+      }
+      .meta a {
+        color: inherit;
+      }
+      .meta a:hover {
+        color: #fafafa;
+      }
+      .empty {
+        font-size: 0.85rem;
+        color: #a1a1aa;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>QUOOTE · Feed</h1>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/rss/quote.xml">RSS</a>
+      </nav>
+${listSection}
+    </main>
+  </body>
+</html>`;
+}
+
 async function serveDataAsset(url: URL): Promise<Response | null> {
   const segments = url.pathname.split("/").filter(Boolean);
   if (segments.length < 2) return null;
@@ -185,6 +318,24 @@ serve({
         }
         return page;
       }
+    }
+
+    if (
+      (request.method === "GET" || request.method === "HEAD") &&
+      url.pathname === "/feed"
+    ) {
+      const headers = {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+      } as const;
+
+      if (request.method === "HEAD") {
+        return new Response(null, { status: 200, headers });
+      }
+
+      const items = listItems<any>({ type: "quote", limit: 50 });
+      const html = buildFeedPage(items);
+      return new Response(html, { status: 200, headers });
     }
 
     if (url.pathname === "/items" && request.method === "POST") {
