@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Quote Cards</title>
+        <title>QUOOTE</title>
         <style>
             :root {
                 color-scheme: dark light;
@@ -158,11 +158,52 @@
             .saved-note.error {
                 color: #ef4444;
             }
+            .site-links {
+                display: flex;
+                gap: 1.25rem;
+                font-size: 0.8rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #d4d4d8;
+            }
+            .site-links a {
+                color: inherit;
+                text-decoration: none;
+            }
+            .site-links a:hover {
+                color: #fafafa;
+            }
         </style>
     </head>
     <body>
         <main>
-            <h1>Quote Cards</h1>
+            <h1>QUOOTE</h1>
+            <nav class="site-links">
+                <a
+                    href="https://quoote.wtf/feed"
+                    target="_blank"
+                    rel="noreferrer"
+                    >Feed</a
+                >
+                <a
+                    href="https://github.com/huugof/quuote"
+                    target="_blank"
+                    rel="noreferrer"
+                    >GitHub</a
+                >
+                <a
+                    href="https://quoote.wtf/about"
+                    target="_blank"
+                    rel="noreferrer"
+                    >About</a
+                >
+                <a
+                    href="https://quoote.wtf/rss/quote.xml"
+                    target="_blank"
+                    rel="noreferrer"
+                    >RSS</a
+                >
+            </nav>
             <form id="quote-form">
                 <div class="field" style="max-width: 60%">
                     <label class="sr-only" for="article_title"
@@ -265,10 +306,7 @@
                     },
                     body: "{}",
                 });
-                if (response.status === 401) {
-                    return false;
-                }
-                return true;
+                return response.status !== 401;
             }
 
             function hideSavedNote() {
@@ -361,8 +399,7 @@
                     },
                 };
 
-                if (articleTitle)
-                    payload.attributes.article_title = articleTitle;
+                if (articleTitle) payload.attributes.article_title = articleTitle;
                 if (site) payload.attributes.author = site;
 
                 submitButton.disabled = true;
@@ -400,6 +437,10 @@
                     submitButton.disabled = false;
                 }
             });
+
+            if (!getToken()) {
+                revealTokenSection();
+            }
         </script>
     </body>
 </html>

@@ -139,6 +139,12 @@ For a more detailed walkthrough (including smoke tests, backups, and TLS tips) s
    ```bash
    sudo systemctl restart quote-cards-api.service quote-cards-worker.service
    ```
+   When you change `SITE_ORIGIN`, requeue existing quotes so their embeds/OG images point at the new host. You can loop over API items and PATCH them back to `queued`, or run a SQLite update:  
+   ```bash
+   sudo -u quote-cards -H sqlite3 /srv/quote-cards/data/db.sqlite \
+     "update items set render_status = 'queued' where render_status = 'rendered';"
+   ```
+   The worker will regenerate assets on the next pass.
 3. **Nginx hostnames:** Update `/etc/nginx/sites-available/quote-cards.conf` so `server_name` matches the domain(s)—typos here make Certbot fail. Ensure only one server block listens on `80` for that host and reload Nginx (`sudo nginx -t && sudo systemctl reload nginx`).
 4. **TLS certificates:** Install Certbot and issue a Let’s Encrypt cert:
    ```bash
