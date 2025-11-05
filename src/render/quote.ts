@@ -2,6 +2,7 @@ import { Resvg } from "@resvg/resvg-js";
 import { encode as encodeJpeg } from "jpeg-js";
 import satori from "satori";
 
+import { escapeHtml } from "@app/lib/html";
 import type { RenderInput } from "@app/render/registry";
 import { registerRenderer } from "@app/render/registry";
 import { loadFonts } from "@app/render/fonts";
@@ -189,15 +190,6 @@ function buildEmbedHtml(input: RenderInput<QuoteAttributes>): string {
     </main>
   </body>
 </html>`;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 function calculateQuoteFontSize(text: string): number {

@@ -41,11 +41,10 @@ PORT=8080
 DATA_ROOT=/srv/quote-cards/data
 DATABASE_PATH=/srv/quote-cards/data/db.sqlite
 SITE_ORIGIN=https://quotes.example.com
-BASE_PATH=
 CARD_VERSION=1
 LOG_LEVEL=info
 ```
-Adjust values for your host, base path, and cache-busting needs.
+Adjust values for your host and cache-busting needs.
 
 ## 4. Systemd Services
 
@@ -75,7 +74,7 @@ Add HTTPS via Certbot or your preferred TLS setup.
 
 ## 6. Smoke Test
 
-1. Check health: `curl https://quotes.example.com/api/health`.
+1. Check health: `curl https://quotes.example.com/health`.
 2. Submit a quote using the generated token:
    ```bash
    curl -X POST https://quotes.example.com/api/items \
@@ -92,6 +91,7 @@ Add HTTPS via Certbot or your preferred TLS setup.
      }'
    ```
 3. Within a few seconds the worker should render assets under `/srv/quote-cards/data/{og,embed,markdown}` and update `rss/quote.xml`.
+4. Optional: `BASE_URL=https://quotes.example.com bun run smoke` for an automated sanity check.
 
 ## 7. Backups & Maintenance
 

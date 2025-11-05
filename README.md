@@ -38,8 +38,14 @@ Environment variables:
 - `DATA_ROOT` – absolute/relative path for asset output (`./data` default).
 - `DATABASE_PATH` – custom SQLite file path.
 - `SITE_ORIGIN` – public hostname (used when generating absolute asset URLs/RSS links).
-- `BASE_PATH` – optional prefix like `/quotes` when hosting behind a subdirectory.
 - `CARD_VERSION` – cache-busting query appended to OG JPEG URLs.
+
+Use `HEAD /items` to validate API tokens without mutating data:
+
+```bash
+curl -I http://localhost:3000/items \
+  -H "Authorization: Bearer <token>"
+```
 
 ## Submitting a quote
 
@@ -70,7 +76,26 @@ Prefer a browser? When the API is running locally, visit `http://localhost:3000/
 - `GET /items/<id>` – retrieve metadata and asset URLs.
 - `GET /items/<id>/markdown` – download canonical Markdown for CLI/editor workflows.
 
-Public assets resolve relative to `/og/`, `/embed/`, `/markdown/`, and `/rss/`. Set `SITE_ORIGIN`/`BASE_PATH` so RSS links and returned URLs match your deployment.
+Public assets resolve relative to `/og/`, `/embed/`, `/markdown/`, and `/rss/`. Set `SITE_ORIGIN` so RSS links and returned URLs match your deployment.
+
+## Web experience & feeds
+
+- `GET /` – browser form for capturing quotes (stores the API token locally).
+- `GET /feed` – HTML feed with the 50 most recent rendered quotes.
+- `GET /about` – static “about” page for copy and contact info.
+- `GET /rss/quote.xml` – RSS feed regenerated after each successful render.
+
+All pages share `public/assets/base.css`; tweak styling there to update the entire surface.
+
+## Smoke test
+
+Run the bundled smoke test to sanity-check the running service (set `BASE_URL` and `API_TOKEN` if you’re pointing at a remote instance):
+
+```bash
+BASE_URL=http://localhost:3000 bun run smoke
+```
+
+If `API_TOKEN` is provided, the script also exercises the authenticated `HEAD /items` probe.
 
 ## API tokens
 
@@ -111,7 +136,6 @@ Tokens are pre-generated secrets hashed in the database. Use `bun run key:create
    DATA_ROOT=/srv/quote-cards/data
    DATABASE_PATH=/srv/quote-cards/data/db.sqlite
    SITE_ORIGIN=https://quotes.example.com
-   BASE_PATH=
    CARD_VERSION=1
    LOG_LEVEL=info
    ```
@@ -128,14 +152,14 @@ Tokens are pre-generated secrets hashed in the database. Use `bun run key:create
    ```
    The units call `/usr/bin/env bun`. If Bun only exists at `/srv/quote-cards/.bun/bin/bun`, either update each `ExecStart` to that absolute path or add `Environment=PATH=/srv/quote-cards/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin` inside the `[Service]` block before reloading systemd.
 9. Configure a reverse proxy (Caddy/Nginx) to terminate TLS and forward to `localhost:3000`. The sample Nginx file under `deploy/nginx/` is a good starting point—if you want `/api/...` paths to reach Bun’s `/items` endpoints, use `proxy_pass http://127.0.0.1:3000/;` (note the trailing slash) so `/api/items` maps cleanly to `/items`.
-10. Verify the setup by browsing to your domain, saving the generated API token in the form, and submitting a test quote. Assets should appear under `/srv/quote-cards/data`.
+10. Verify the setup by browsing to your domain, saving the generated API token in the form, and submitting a test quote. Then spot-check `/feed` and run `BASE_URL=https://your-domain bun run smoke` if you want automated confirmation. Assets should appear under `/srv/quote-cards/data`.
 
 For a more detailed walkthrough (including smoke tests, backups, and TLS tips) see `deploy/README.md`.
 
 ## Domain & TLS
 
 1. **DNS:** Point an `A` record (and optionally `www` CNAME) at your VPS IP. Wait for propagation (`dig quoote.wtf +short` should return the droplet address).
-2. **App config:** Set `SITE_ORIGIN=https://your-domain` and, if needed, `BASE_PATH` in `/etc/quote-cards.env`, then restart the services:
+2. **App config:** Set `SITE_ORIGIN=https://your-domain` in `/etc/quote-cards.env`, then restart the services:
    ```bash
    sudo systemctl restart quote-cards-api.service quote-cards-worker.service
    ```
@@ -153,34 +177,43 @@ For a more detailed walkthrough (including smoke tests, backups, and TLS tips) s
    ```
    Certbot adds the `listen 443 ssl` block automatically. If multiple domains share the site, include them all in the `-d` list.
 5. **Redirect to HTTPS:** Accept Certbot’s redirect prompt (or add a tiny `server { listen 80; server_name www.example.com; return 301 https://example.com$request_uri; }` block). Confirm with:
-   ```bash
-   curl -I https://quoote.wtf
-   curl -I https://www.quoote.wtf
-   ```
+  ```bash
+  curl -I https://quoote.wtf
+  curl -I https://www.quoote.wtf
+  curl -I https://quoote.wtf/feed
+  ```
 6. **Renewal:** Certbot installs a cron/systemd timer. Test it anytime with `sudo certbot renew --dry-run`.
 
 ## Project structure
 
 ```
 .
+├─ public/
+│  ├─ index.html        # quote submission form (loads shared CSS/JS)
+│  ├─ about.html        # static about page
+│  └─ assets/
+│     ├─ app.js         # front-end logic (token storage + form handler)
+│     └─ base.css       # shared styling for every page
 ├─ src/
 │  ├─ api.ts            # Bun HTTP server
 │  ├─ worker.ts         # render queue processor
+│  ├─ web/              # HTML helpers (e.g., feed page renderer)
 │  ├─ lib/              # config, db, auth, RSS, filesystem helpers
 │  ├─ types/            # item type registry + quote schema/normalizers
-│  └─ render/           # renderer registry + Satori/Resvg quote renderer
+│  ├─ render/           # renderer registry + Satori/Resvg quote renderer
+│  └─ scripts/          # CLI utilities (migrate, smoke tests, key generation)
 ├─ migrations/          # SQLite migration files
 ├─ data/                # generated assets + SQLite (gitignored)
 └─ bunfig.toml / tsconfig.json
 ```
 
-The quote renderer uses Satori to build SVGs, Resvg to rasterize, and jpeg-js to encode OG cards. Templates live in `src/render`.
+The quote renderer uses Satori to build SVGs, Resvg to rasterize, and jpeg-js to encode OG cards. Templates live in `src/render` and share escaping helpers from `src/lib/html.ts`.
 
-## Next steps
+## Future roadmap
 
-- Flesh out the quote renderer with Satori + Resvg + jpeg-js outputs.
-- Add product/item renderers via the type registry.
-- Layer richer auth (per-user keys, workspaces) on top of the existing API key table.
+- Support multiple users by introducing a `users` table, associating quotes with owners, and scoping API responses accordingly.
+- Offer Farcaster authentication (miniapp) so each FID posts to its own quote workspace without sharing raw API keys.
+- Expand renderers (additional item types, alternative themes) once the authentication model is in place.
 
 ## Troubleshooting
 

@@ -13,7 +13,8 @@
     "start:api": "bun run src/api.ts",
     "start:worker": "bun run src/worker.ts",
     "migrate": "bun run src/scripts/migrate.ts",
-    "key:create": "bun run src/scripts/create-api-key.ts"
+    "key:create": "bun run src/scripts/create-api-key.ts",
+    "smoke": "bun run src/scripts/smoke.ts"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.4.1",

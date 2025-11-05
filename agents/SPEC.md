@@ -18,7 +18,7 @@ A lean Bun-powered service that captures quotes from any client, validates and s
 - **Ingress API (Bun HTTP server)**: `/quotes` CRUD endpoints with auth middleware.
 - **Storage**: SQLite (default) or Postgres (if multi-instance) with schema + JSONB extension fields.
 - **Render Worker**: Bun process watching a queue/table. Uses Satori + Resvg + jpeg-js to render JPEG and wrapper HTML; updates row status.
-- **Static Hosting**: Nginx (or Bun static server) serving `/og/<id>.jpg`, `/embed/<id>.html`, `/cards/`, `/q/`.
+- **Static Hosting**: Nginx (or Bun static server) serving `/og/<type>/<id>.jpg`, `/embed/<type>/<id>.html`, `/markdown/<type>/<id>.md`, `/rss/<type>.xml`, plus `/assets/*` from `public/`.
 - **Distribution Endpoints**:
   - `/quotes/:id/markdown` → raw front matter for CLI.
   - `/quotes/rss.xml` → latest quotes feed.
@@ -83,10 +83,10 @@ A lean Bun-powered service that captures quotes from any client, validates and s
   2. Call `renderQuoteSvg` (Satori) using stored fonts (Atkinson Hyperlegible).
   3. Use Resvg to rasterize; encode via `jpeg-js`.
   4. Produce wrapper HTML (iframe-friendly) using moustacheless template or template literal.
-  5. Write JPEG to `data/cards/<id>.jpg`; HTML to `data/q/<id>/index.html`.
+  5. Write JPEG to `data/og/<type>/<id>.jpg`; HTML to `data/embed/<type>/<id>.html`; Markdown to `data/markdown/<type>/<id>.md`; refresh `data/rss/<type>.xml`.
   6. Update DB: `render_status=rendered`, set paths + `rendered_at`, recompute hash.
   7. On error, set `render_status=failed`, log stack, auto-retry with exponential backoff.
-- Ensure fonts/templates are read from `build/templates` folder. Hash these assets to detect global rerender triggers.
+- Fonts live under `assets/fonts/` and renderer templates sit in `src/render`. Hash these assets to detect global rerender triggers.
 - Optional dynamic fallback: if `/og/:id.jpg` is missing when requested, worker can render on-demand (respecting rate limits).
 
 ---
@@ -131,7 +131,8 @@ A lean Bun-powered service that captures quotes from any client, validates and s
   - Systemd service `quote-cards-worker.service` (render worker).
   - Nginx proxy:
     - `/api/*` -> Bun API.
-    - `/og/`, `/embed/`, `/q/`, `/cards/` -> static files under `/srv/quote-cards/public`.
+    - `/og/`, `/embed/`, `/markdown/`, `/rss/` -> static files under `/srv/quote-cards/data`.
+    - `/assets/` -> static assets under `/srv/quote-cards/app/public/assets`.
 - SSL: Let’s Encrypt certbot.
 - Backup: nightly DB dump + rsync `data/` directory (JPEG/HTML). Keep fonts/templates under version control.
 
@@ -163,7 +164,7 @@ A lean Bun-powered service that captures quotes from any client, validates and s
 **Deliverables Checklist**
 - [ ] Bun project with `src/api.ts`, `src/worker.ts`, `src/lib/render.ts`.
 - [ ] Database schema + migrations.
-- [ ] Templates + fonts in `build/`.
+- [ ] Templates + fonts colocated under `src/render/` and `assets/fonts/`.
 - [ ] CLI tool hitting API.
 - [ ] Web form (protected).
 - [ ] RSS feed generator.
