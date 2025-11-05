@@ -23,7 +23,7 @@ import {
 } from "@app/lib/http";
 import { getType } from "@app/types/index";
 import type { ItemAttributes, NormalizedPayload } from "@app/types/types";
-import { renderFeedPage, feedResponseHeaders } from "@app/web/feed";
+import { renderFeedPage, feedResponseHeaders } from "./web/feed";
 
 const config = loadConfig();
 
