@@ -1,270 +1,275 @@
 :root {
-  color-scheme: dark light;
+    color-scheme: dark light;
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  background: #111;
-  color: #f4f4f5;
-  display: flex;
-  justify-content: center;
-  padding: 3rem 1.5rem;
-  min-height: 100vh;
+    margin: 0;
+    font-family:
+        "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: #111;
+    color: #f4f4f5;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    min-height: 100vh;
 }
 
 main.layout {
-  width: min(720px, 100%);
-  display: grid;
-  gap: 1.25rem;
+    width: min(720px, 100%);
+    display: grid;
+    gap: 1.25rem;
 }
 
 main.layout.feed-page {
-  gap: 1.5rem;
+    gap: 1.5rem;
 }
 
 h1 {
-  margin: 0;
-  font-size: 1.4rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #fafafa;
+    margin: 0;
+    font-size: 1.4rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fafafa;
 }
 
 .site-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #d4d4d8;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #d4d4d8;
 }
 
 .site-links a {
-  color: inherit;
-  text-decoration: none;
-  opacity: 0.75;
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.75;
 }
 
 .site-links a:hover {
-  opacity: 1;
+    opacity: 1;
 }
 
 .site-links a.active-link {
-  opacity: 1;
-  text-decoration: underline;
+    opacity: 1;
+    text-decoration: underline;
 }
 
 .site-links a.external::after {
-  content: "↗";
-  font-size: 0.7rem;
-  margin-left: 0.2rem;
-  opacity: 0.6;
+    content: "↗";
+    font-size: 0.7rem;
+    margin-left: 0.2rem;
+    opacity: 0.6;
 }
 
 .site-links a.external:hover::after {
-  opacity: 1;
+    opacity: 1;
 }
 
 form {
-  display: grid;
-  gap: 0.85rem;
+    display: grid;
+    gap: 0.85rem;
 }
 
 .field {
-  position: relative;
+    position: relative;
 }
 
 .field input,
 .field textarea {
-  width: 100%;
-  border: 1px solid #3f3f46;
-  background: #0c0c0c;
-  color: inherit;
-  padding: 0.3rem 0.45rem;
-  font-size: 0.85rem;
-  border-radius: 4px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    width: 100%;
+    border: 1px solid #3f3f46;
+    background: #0c0c0c;
+    color: inherit;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 .field textarea {
-  min-height: 130px;
-  resize: vertical;
+    min-height: 130px;
+    resize: vertical;
 }
 
 .field input:focus,
 .field textarea:focus {
-  outline: none;
-  border-color: #fafafa;
-  box-shadow: 0 0 0 3px rgba(250, 250, 250, 0.12);
+    outline: none;
+    border-color: #fafafa;
+    box-shadow: 0 0 0 3px rgba(250, 250, 250, 0.12);
 }
 
 .actions {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
-  align-items: center;
-  gap: 0.85rem;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    align-items: center;
+    gap: 0.85rem;
 }
 
 button {
-  border: 1px solid #3f3f46;
-  background: transparent;
-  color: inherit;
-  padding: 0.3rem 0.45rem;
-  font-size: 0.9rem;
-  border-radius: 4px;
-  transition: border-color 0.15s ease, color 0.15s ease;
-  cursor: pointer;
+    border: 1px solid #3f3f46;
+    background: transparent;
+    color: inherit;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition:
+        border-color 0.15s ease,
+        color 0.15s ease;
+    cursor: pointer;
 }
 
 button:hover {
-  border-color: #fafafa;
-  color: #fafafa;
+    border-color: #fafafa;
+    color: #fafafa;
 }
 
 button:disabled {
-  opacity: 0.4;
-  cursor: wait;
+    opacity: 0.4;
+    cursor: wait;
 }
 
 .status {
-  border: 1px solid #3f3f46;
-  padding: 0.35rem 0.45rem;
-  border-radius: 4px;
-  display: none;
-  background: #0c0c0c;
-  font-size: 0.8rem;
+    border: 1px solid #3f3f46;
+    padding: 0.35rem 0.45rem;
+    border-radius: 4px;
+    display: none;
+    background: #0c0c0c;
+    font-size: 0.8rem;
 }
 
 .status.success {
-  display: block;
-  border-color: #34d399;
-  color: #34d399;
+    display: block;
+    border-color: #34d399;
+    color: #34d399;
 }
 
 .status.error {
-  display: block;
-  border-color: #f87171;
-  color: #f87171;
+    display: block;
+    border-color: #f87171;
+    color: #f87171;
 }
 
 .token-section {
-  display: none;
-  grid-column: 2;
+    display: none;
+    grid-column: 2;
 }
 
 .token-section.active {
-  display: block;
+    display: block;
 }
 
 .token-section input {
-  border-color: #ef4444;
-  color: #ef4444;
+    border-color: #ef4444;
+    color: #ef4444;
 }
 
 .token-section input:focus {
-  border-color: #ef4444;
-  box-shadow: none;
+    border-color: #ef4444;
+    box-shadow: none;
 }
 
 .token-section input::placeholder {
-  color: #ef4444;
+    color: #ef4444;
 }
 
 .saved-note {
-  display: none;
-  grid-column: 2;
-  justify-self: end;
-  font-size: 0.75rem;
+    display: none;
+    grid-column: 2;
+    justify-self: end;
+    font-size: 0.75rem;
 }
 
 .saved-note.visible {
-  display: block;
+    display: block;
 }
 
 .saved-note.success {
-  color: #34d399;
+    color: #34d399;
 }
 
 .saved-note.error {
-  color: #ef4444;
+    color: #ef4444;
 }
 
 .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .quote-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
 }
 
 .quote-item {
-  border: 1px solid #3f3f46;
-  border-radius: 6px;
-  padding: 1rem 1.1rem;
-  background: #0c0c0c;
-  display: grid;
-  gap: 0.6rem;
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+    background: #0c0c0c;
+    display: grid;
+    gap: 0.6rem;
 }
 
 .quote-item blockquote {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.6;
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
 }
 
 .quote-item cite {
-  font-style: normal;
-  color: #a1a1aa;
-  font-size: 0.85rem;
+    font-style: normal;
+    color: #a1a1aa;
+    font-size: 0.85rem;
 }
 
 .quote-item .meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  color: #d4d4d8;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: #d4d4d8;
 }
 
 .quote-item .meta a {
-  color: inherit;
+    color: inherit;
 }
 
 .quote-item .meta a:hover {
-  color: #fafafa;
+    color: #fafafa;
 }
 
 .empty {
-  font-size: 0.85rem;
-  color: #a1a1aa;
+    font-size: 0.85rem;
+    color: #a1a1aa;
 }
 
 @media (max-width: 520px) {
-  .actions {
-    grid-template-columns: 1fr;
-  }
+    .actions {
+        grid-template-columns: 1fr;
+    }
 
-  .token-section,
-  .saved-note {
-    grid-column: 1;
-    justify-self: start;
-  }
+    .token-section,
+    .saved-note {
+        grid-column: 1;
+        justify-self: start;
+    }
 }
