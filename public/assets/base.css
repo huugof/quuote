@@ -74,29 +74,6 @@ h1 {
     opacity: 1;
 }
 
-.edit-banner {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  border: 1px solid #facc15;
-  color: #facc15;
-  padding: 0.35rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-}
-
-.edit-banner.active {
-  display: flex;
-}
-
-.edit-banner button {
-  border: 1px solid currentColor;
-  color: inherit;
-  font-size: 0.75rem;
-  padding: 0.15rem 0.4rem;
-}
-
 .page-copy {
   display: flex;
   flex-direction: column;
@@ -276,12 +253,27 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  position: relative;
+}
+
+.quote-item.editing {
+  border-color: #facc15;
+}
+
+.quote-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.quote-item.editing .quote-view {
+  display: none;
 }
 
 .quote-item blockquote {
     margin: 0;
-    font-size: 1rem;
-    line-height: 1.45;
+    font-size: 1.1rem;
+    line-height: 1.5;
 }
 
 .quote-source {
@@ -289,34 +281,54 @@ button:disabled {
   color: #a1a1aa;
 }
 
-.quote-actions {
+.quote-links {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
   align-items: center;
+  gap: 0.75rem;
   font-size: 0.75rem;
-  color: #d4d4d8;
+  width: 100%;
 }
 
-.quote-actions a,
-.quote-actions button {
+.quote-links .source-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: block;
   color: inherit;
-  border: 1px solid #3f3f46;
-  background: transparent;
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
-  font-size: 0.75rem;
+  text-decoration: underline;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quote-links .source-link.muted {
+  opacity: 0.6;
   text-decoration: none;
 }
 
-.quote-actions button {
-  cursor: pointer;
+.quote-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
 }
 
-.quote-actions button:hover,
-.quote-actions a:hover {
-    color: #fafafa;
-    border-color: #fafafa;
+.quote-actions button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+
+  display: inline-flex;
+  align-items: center;
+}
+
+.quote-actions button.delete {
+  color: #f87171;
+}
+
+.quote-actions button:hover {
+  text-decoration: underline;
 }
 
 .quote-actions button:disabled {
@@ -324,10 +336,57 @@ button:disabled {
   cursor: wait;
 }
 
-.quote-actions .muted {
-  opacity: 0.6;
-  border: none;
-  padding: 0;
+.quote-actions .icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.quote-edit-form {
+  display: none;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid #27272a;
+}
+
+.quote-item.editing .quote-edit-form {
+  display: flex;
+}
+
+.quote-edit-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.quote-edit-actions button {
+  border: 1px solid #3f3f46;
+  background: transparent;
+  color: inherit;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.quote-edit-actions button:hover {
+  border-color: #fafafa;
+  color: #fafafa;
+}
+
+.quote-edit-actions button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.quote-edit-status {
+  min-height: 1em;
+  font-size: 0.75rem;
+  color: #f87171;
 }
 
 .empty {
