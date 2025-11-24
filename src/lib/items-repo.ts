@@ -313,3 +313,8 @@ export function listRenderedItems<T>(type: string, limit = 50): ItemRow<T>[] {
     .all(type, limit);
   return rows.map((row) => mapRow<T>(row));
 }
+
+export function deleteItem(id: string) {
+  const db = getDb();
+  db.query("DELETE FROM items WHERE id = ?").run(id);
+}

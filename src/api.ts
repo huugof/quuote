@@ -11,6 +11,7 @@ import {
   getItemById,
   listItems,
   listRenderedItems,
+  deleteItem,
   updateItem,
   type ItemRow,
 } from "@app/lib/items-repo";
@@ -24,6 +25,8 @@ import {
 import { getType } from "@app/types/index";
 import type { ItemAttributes, NormalizedPayload } from "@app/types/types";
 import { renderFeedPage, feedResponseHeaders } from "./web/feed";
+import { deleteFileIfExists } from "@app/lib/fs";
+import { regenerateFeedsForType } from "@app/lib/rss";
 
 const config = loadConfig();
 
@@ -31,6 +34,14 @@ await runMigrations();
 
 const PUBLIC_DIR = join(process.cwd(), "public");
 const DATA_ROOT = config.dataRoot;
+
+async function removeItemAssets(item: ItemRow<any>) {
+  await Promise.all([
+    deleteFileIfExists(item.ogPath ?? undefined),
+    deleteFileIfExists(item.embedPath ?? undefined),
+    deleteFileIfExists(item.markdownPath ?? undefined),
+  ]);
+}
 
 function getBearerToken(request: Request): string | null {
   const header = request.headers.get("authorization");
@@ -422,10 +433,34 @@ serve({
       }
     }
 
+    if (url.pathname.startsWith("/items/") && request.method === "DELETE") {
+      if (!ensureAuthenticated(request)) {
+        return errorResponse("Unauthorized", 401);
+      }
+      const parts = url.pathname.split("/").filter(Boolean);
+      const id = parts[1];
+      if (!id) return notFound();
+
+      const existing = getItemById<any>(id);
+      if (!existing) return notFound();
+
+      try {
+        await removeItemAssets(existing);
+        deleteItem(id);
+        await regenerateFeedsForType(existing.type);
+        logger.info("item_deleted", { id, type: existing.type });
+        return new Response(null, { status: 204 });
+      } catch (error) {
+        logger.error("delete_item_failed", { id, error });
+        return errorResponse("Unable to delete item", 500);
+      }
+    }
+
     if (
       url.pathname.startsWith("/items/") &&
       request.method !== "GET" &&
-      request.method !== "PATCH"
+      request.method !== "PATCH" &&
+      request.method !== "DELETE"
     ) {
       return methodNotAllowed();
     }

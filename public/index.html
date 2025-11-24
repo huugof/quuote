@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="/assets/base.css" />
     </head>
     <body>
-        <main class="layout">
+        <main class="layout page home-page">
             <h1>QUOOTE</h1>
             <nav class="site-links">
                 <a href="/" class="active-link">Home</a>
@@ -22,8 +22,12 @@
                 <a href="/about">About</a>
                 <a href="/rss/quote.xml">RSS</a>
             </nav>
+            <div class="edit-banner" id="edit-banner" hidden>
+                <span id="edit-banner-text"></span>
+                <button type="button" id="cancel-edit-button">cancel</button>
+            </div>
             <form id="quote-form">
-                <div class="field" style="max-width: 60%">
+                <div class="field field--narrow">
                     <label class="sr-only" for="article_title"
                         >Article Title</label
                     >
@@ -33,7 +37,7 @@
                         placeholder="article title"
                     />
                 </div>
-                <div class="field" style="max-width: 60%">
+                <div class="field field--narrow">
                     <label class="sr-only" for="site">Site</label>
                     <input id="site" type="text" placeholder="blog / author" />
                 </div>

@@ -7,33 +7,35 @@
 }
 
 body {
-    margin: 0;
-    font-family:
-        "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    background: #111;
-    color: #f4f4f5;
-    display: flex;
-    justify-content: center;
-    padding: 2rem 1.5rem;
-    min-height: 100vh;
+  margin: 0;
+  font-family:
+    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: #111;
+  color: #f4f4f5;
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 1.25rem;
+  min-height: 100vh;
 }
 
 main.layout {
   width: min(720px, 100%);
-  display: grid;
-  gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-main.layout.feed-page {
-  gap: 1rem;
+main.layout > * {
+  margin: 0;
 }
 
 h1 {
-    margin: 0;
-    font-size: 1.4rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #fafafa;
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: #fafafa;
 }
 
 .site-links {
@@ -72,9 +74,51 @@ h1 {
     opacity: 1;
 }
 
+.edit-banner {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 1px solid #facc15;
+  color: #facc15;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.edit-banner.active {
+  display: flex;
+}
+
+.edit-banner button {
+  border: 1px solid currentColor;
+  color: inherit;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.page-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #d4d4d8;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.page-copy p {
+  margin: 0;
+}
+
+.page-copy a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 form {
-  display: grid;
-  gap: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .field {
@@ -93,6 +137,10 @@ form {
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease;
+}
+
+.field--narrow {
+  max-width: 60%;
 }
 
 .field textarea {
@@ -217,44 +265,69 @@ button:disabled {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 1.25rem;
+  gap: 0.85rem;
 }
 
 .quote-item {
   border: 1px solid #3f3f46;
   border-radius: 6px;
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 0.85rem;
   background: #0c0c0c;
-  display: grid;
-  gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .quote-item blockquote {
     margin: 0;
-    font-size: 1.05rem;
-    line-height: 1.6;
+    font-size: 1rem;
+    line-height: 1.45;
 }
 
-.quote-item cite {
-    font-style: normal;
-    color: #a1a1aa;
-    font-size: 0.85rem;
+.quote-source {
+  font-size: 0.85rem;
+  color: #a1a1aa;
 }
 
-.quote-item .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    font-size: 0.75rem;
-    color: #d4d4d8;
+.quote-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #d4d4d8;
 }
 
-.quote-item .meta a {
-    color: inherit;
+.quote-actions a,
+.quote-actions button {
+  color: inherit;
+  border: 1px solid #3f3f46;
+  background: transparent;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  text-decoration: none;
 }
 
-.quote-item .meta a:hover {
+.quote-actions button {
+  cursor: pointer;
+}
+
+.quote-actions button:hover,
+.quote-actions a:hover {
     color: #fafafa;
+    border-color: #fafafa;
+}
+
+.quote-actions button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.quote-actions .muted {
+  opacity: 0.6;
+  border: none;
+  padding: 0;
 }
 
 .empty {

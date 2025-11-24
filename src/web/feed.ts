@@ -1,5 +1,4 @@
 import type { ItemRow } from "@app/lib/items-repo";
-import { buildAssetUrls } from "@app/lib/assets";
 import { escapeHtml, renderNav } from "@app/lib/html";
 
 const FEED_HEADERS = {
@@ -17,30 +16,22 @@ export function renderFeedPage(items: ItemRow<any>[]): string {
       const attributes: Record<string, unknown> = item.attributes ?? {};
       const quoteText = typeof attributes.quote_text === "string" ? attributes.quote_text : "";
       const author = typeof attributes.author === "string" ? attributes.author : "";
+      const articleTitle = typeof attributes.article_title === "string" ? attributes.article_title : "";
       const sourceUrl = item.sourceUrl ?? (typeof attributes.url === "string" ? attributes.url : "");
-      const assets = buildAssetUrls(item.type, item.id);
-
       const quoteHtml = escapeHtml(quoteText);
-      const authorHtml = author ? `<cite>${escapeHtml(author)}</cite>` : "";
+      const domain = sourceUrl ? safeHostname(sourceUrl) : "";
+      const secondary = articleTitle || author || domain || "Collected quote";
       const sourceLink = sourceUrl
         ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">source</a>`
-        : "";
-
-      const links = [
-        `<span>ID: ${escapeHtml(item.id)}</span>`,
-        sourceLink,
-        `<a href="${escapeHtml(assets.embed)}" target="_blank" rel="noreferrer">embed</a>`,
-        `<a href="${escapeHtml(assets.og)}" target="_blank" rel="noreferrer">og</a>`,
-        `<a href="${escapeHtml(assets.markdown)}" target="_blank" rel="noreferrer">markdown</a>`,
-      ]
-        .filter(Boolean)
-        .join("\n          ");
+        : `<span class="muted">no source</span>`;
 
       return `        <li class="quote-item">
           <blockquote>“${quoteHtml}”</blockquote>
-          ${authorHtml}
-          <div class="meta">
-            ${links}
+          <div class="quote-source">${escapeHtml(secondary)}</div>
+          <div class="quote-actions">
+            ${sourceLink}
+            <button type="button" class="quote-action" data-action="edit" data-item-id="${escapeHtml(item.id)}">edit</button>
+            <button type="button" class="quote-action" data-action="delete" data-item-id="${escapeHtml(item.id)}">delete</button>
           </div>
         </li>`;
     })
@@ -59,11 +50,20 @@ export function renderFeedPage(items: ItemRow<any>[]): string {
     <link rel="stylesheet" href="/assets/base.css" />
   </head>
   <body>
-    <main class="layout feed-page">
+    <main class="layout page feed-page">
       <h1>Latest Quotes</h1>
       ${renderNav("feed")}
 ${listSection}
     </main>
+    <script type="module" src="/assets/feed.js"></script>
   </body>
 </html>`;
+}
+
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "";
+  }
 }

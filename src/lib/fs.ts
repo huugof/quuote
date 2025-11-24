@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, unlink } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 async function ensureDir(path: string) {
@@ -30,4 +30,17 @@ export async function ensureTypeDirectories(dataRoot: string, type: string) {
 export async function writeFileEnsured(path: string, data: string | ArrayBuffer | Uint8Array) {
   await ensureParentDir(path);
   await Bun.write(path, data);
+}
+
+export async function deleteFileIfExists(path: string | null | undefined) {
+  if (!path) return;
+  try {
+    await unlink(path);
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err?.code === "ENOENT") {
+      return;
+    }
+    throw err;
+  }
 }
