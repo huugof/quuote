@@ -19,7 +19,9 @@ body {
 }
 
 main.layout {
-  width: min(720px, 100%);
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -237,6 +239,7 @@ button:disabled {
     border: 0;
 }
 
+
 .quote-list {
   list-style: none;
   margin: 0;
@@ -246,6 +249,12 @@ button:disabled {
 }
 
 .quote-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.quote-card {
   border: 1px solid #3f3f46;
   border-radius: 6px;
   padding: 0.75rem 0.85rem;
@@ -253,10 +262,12 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  position: relative;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-.quote-item.editing {
+.quote-item.editing .quote-card {
   border-color: #facc15;
 }
 
@@ -272,8 +283,8 @@ button:disabled {
 
 .quote-item blockquote {
     margin: 0;
-    font-size: 1.1rem;
-    line-height: 1.5;
+    font-size: 1rem;
+    line-height: 1.45;
 }
 
 .quote-source {
@@ -281,17 +292,15 @@ button:disabled {
   color: #a1a1aa;
 }
 
+
+
+
 .quote-links {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  display: block;
   font-size: 0.75rem;
-  width: 100%;
 }
 
 .quote-links .source-link {
-  flex: 1 1 auto;
-  min-width: 0;
   display: block;
   color: inherit;
   text-decoration: underline;
@@ -305,10 +314,30 @@ button:disabled {
   text-decoration: none;
 }
 
+.quote-actions-wrapper {
+  width: 100%;
+  max-width: 720px;
+  padding: 0 0.85rem;
+  margin: 0 auto;
+  margin-top: 0.05rem;
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
 .quote-actions {
   display: flex;
   gap: 0.35rem;
-  flex-shrink: 0;
+}
+
+.quote-item:hover .quote-actions-wrapper,
+.quote-item:focus-within .quote-actions-wrapper {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .quote-actions button {
@@ -318,7 +347,6 @@ button:disabled {
   padding: 0;
   cursor: pointer;
   font: inherit;
-
   display: inline-flex;
   align-items: center;
 }
@@ -327,8 +355,12 @@ button:disabled {
   color: #f87171;
 }
 
+.quote-actions button.copied {
+  color: #34d399;
+}
+
 .quote-actions button:hover {
-  text-decoration: underline;
+  opacity: 0.8;
 }
 
 .quote-actions button:disabled {
@@ -344,6 +376,31 @@ button:disabled {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+@media (hover: none) {
+  .quote-actions-wrapper {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .quote-links .source-link {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .quote-actions-wrapper {
+    justify-content: flex-start;
+    padding: 0 0.5rem;
+  }
+
+  .quote-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
 }
 
 .quote-edit-form {

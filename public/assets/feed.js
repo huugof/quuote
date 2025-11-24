@@ -156,6 +156,31 @@ async function handleDelete(id, button) {
   }
 }
 
+async function handleCopy(button) {
+  const url = button.dataset.embedUrl;
+  if (!url) return;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+    } else {
+      const textarea = document.createElement("textarea");
+      textarea.value = url;
+      textarea.style.position = "fixed";
+      textarea.style.top = "-1000px";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    }
+    button.classList.add("copied");
+    setTimeout(() => button.classList.remove("copied"), 1500);
+  } catch (error) {
+    console.error("copy_embed_failed", error);
+    window.prompt("Copy embed URL", url);
+  }
+}
+
 async function handleEditSubmit(event) {
   event.preventDefault();
   const form = event.currentTarget;
@@ -234,11 +259,15 @@ function handleActionClick(event) {
   if (!(button instanceof HTMLElement)) return;
   const action = button.dataset.action;
   const id = button.dataset.itemId;
-  if (!action || !id) return;
+  if (!action) return;
   if (action === "edit") {
+    if (!id) return;
     handleEditClick(button);
   } else if (action === "delete" && button instanceof HTMLButtonElement) {
+    if (!id) return;
     handleDelete(id, button);
+  } else if (action === "copy") {
+    handleCopy(button);
   }
 }
 
