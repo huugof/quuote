@@ -380,9 +380,7 @@ button:disabled {
 
 @media (hover: none) {
   .quote-actions-wrapper {
-    opacity: 1;
-    pointer-events: auto;
-    transform: none;
+    display: none;
   }
 }
 
@@ -461,4 +459,68 @@ button:disabled {
         grid-column: 1;
         justify-self: start;
     }
+}
+@media (hover: none) {
+  .quote-card {
+    cursor: pointer;
+  }
+}
+
+.mobile-action-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
+}
+
+.mobile-action-backdrop.active {
+  display: flex;
+}
+
+.mobile-action-sheet {
+  background: #1b1b1d;
+  border: 1px solid #2f2f35;
+  border-radius: 18px;
+  padding: 1rem;
+  width: min(280px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}
+
+.mobile-action-sheet button {
+  border: none;
+  background: none;
+  color: #f4f4f5;
+  font: inherit;
+  text-align: left;
+  padding: 0.4rem 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 10px;
+}
+
+.mobile-action-sheet button:hover,
+.mobile-action-sheet button:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mobile-action-sheet button.delete {
+  color: #f87171;
+}
+
+.mobile-action-sheet button svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }

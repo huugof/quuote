@@ -33,7 +33,7 @@ export function renderFeedPage(items: ItemRow<any>[]): string {
       const urlValue = escapeHtml(sourceUrl);
       const quoteValue = escapeHtml(quoteText);
 
-      return `        <li class="quote-item" data-item-id="${idAttr}">
+      return `        <li class="quote-item" data-item-id="${idAttr}" data-embed-url="${escapeHtml(assets.embed)}">
           <div class="quote-card">
             <div class="quote-view">
               <blockquote>“${quoteValue}”</blockquote>

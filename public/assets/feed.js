@@ -1,4 +1,8 @@
 const TOKEN_KEY = "quoteCardsToken";
+const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+let mobileSheet = null;
+let mobileSheetBackdrop = null;
+let activeMobileItem = null;
 
 function getToken() {
   return localStorage.getItem(TOKEN_KEY) ?? "";
@@ -181,6 +185,104 @@ async function handleCopy(button) {
   }
 }
 
+function createMobileActionSheet() {
+  mobileSheetBackdrop = document.createElement("div");
+  mobileSheetBackdrop.className = "mobile-action-backdrop";
+  const sheet = document.createElement("div");
+  sheet.className = "mobile-action-sheet";
+  sheet.innerHTML = `
+    <button type="button" data-sheet-action="copy">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      Copy embed URL
+    </button>
+    <button type="button" data-sheet-action="edit">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 20h9"></path>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+      </svg>
+      Edit quote
+    </button>
+    <button type="button" class="delete" data-sheet-action="delete">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+      Delete quote
+    </button>
+  `;
+  mobileSheetBackdrop.appendChild(sheet);
+  document.body.appendChild(mobileSheetBackdrop);
+  mobileSheet = sheet;
+
+  mobileSheetBackdrop.addEventListener("click", (event) => {
+  if (event.target === mobileSheetBackdrop) {
+    closeMobileActionSheet();
+  }
+  });
+
+  sheet.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("click", onMobileSheetAction);
+  });
+}
+
+function openMobileActionSheet(item) {
+  if (!mobileSheet || !mobileSheetBackdrop || !item) return;
+  activeMobileItem = item;
+  const copyBtn = mobileSheet.querySelector('[data-sheet-action="copy"]');
+  const editBtn = mobileSheet.querySelector('[data-sheet-action="edit"]');
+  const deleteBtn = mobileSheet.querySelector('[data-sheet-action="delete"]');
+  const embedUrl = item.dataset.embedUrl ?? item.querySelector('[data-action="copy"]')?.dataset.embedUrl ?? "";
+  if (copyBtn) copyBtn.dataset.embedUrl = embedUrl;
+  if (editBtn) editBtn.dataset.itemId = item.dataset.itemId ?? "";
+  if (deleteBtn) deleteBtn.dataset.itemId = item.dataset.itemId ?? "";
+  mobileSheetBackdrop.classList.add("active");
+}
+
+function closeMobileActionSheet() {
+  activeMobileItem = null;
+  mobileSheetBackdrop?.classList.remove("active");
+}
+
+function onMobileSheetAction(event) {
+  const action = event.currentTarget.dataset.sheetAction;
+  if (!action || !activeMobileItem) return;
+  if (action === "copy") {
+    handleCopy(event.currentTarget);
+    closeMobileActionSheet();
+  } else if (action === "edit") {
+    const button = activeMobileItem.querySelector('[data-action="edit"]');
+    if (button) {
+      handleEditClick(button);
+    }
+    closeMobileActionSheet();
+  } else if (action === "delete") {
+    const button = activeMobileItem.querySelector('[data-action="delete"]');
+    if (button instanceof HTMLButtonElement) {
+      handleDelete(activeMobileItem.dataset.itemId ?? "", button);
+    }
+    closeMobileActionSheet();
+  }
+}
+
+function attachMobileCardHandlers() {
+  if (!isCoarsePointer) return;
+  if (!mobileSheet) {
+    createMobileActionSheet();
+  }
+  document.querySelectorAll(".quote-card").forEach((card) => {
+    card.addEventListener("click", (event) => {
+      const item = card.closest(".quote-item");
+      if (!item) return;
+      if (item.classList.contains("editing")) return;
+      if (event.target.closest("button")) return;
+      openMobileActionSheet(item);
+    });
+  });
+}
+
 async function handleEditSubmit(event) {
   event.preventDefault();
   const form = event.currentTarget;
@@ -284,6 +386,8 @@ function init() {
   document.querySelectorAll('[data-role="cancel-edit"]').forEach((button) => {
     button.addEventListener("click", handleCancelClick);
   });
+
+  attachMobileCardHandlers();
 }
 
 document.addEventListener("DOMContentLoaded", init);
